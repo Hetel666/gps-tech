@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GPS.AZ • tech wiki</title>
+    <link rel="stylesheet" href="custom.css">
+</head>
+
+<body>
+    <header>
+        <div class="wrap">
+            <div class="top">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <h1>GPS.AZ • wiki • <span id="headerContext">Команды</span></h1>
+                    <span class="badge" id="langBadge">RU</span>
+                    <span class="badge">By Hetel</span>
+                </div>
+
+                <div class="controls">
+                    <select id="lang">
+                        <option value="ru">Русский</option>
+                        <option value="az">Azərbaycanca</option>
+                    </select>
+                    <button id="migrateBtn" class="outline" style="display:none;" title="Migrate Static to DB">📥
+                        DB</button>
+                    <button id="themeToggle" class="outline" title="Switch Theme">☀/☾</button>
+                    <button class="primary" id="loginBtn">Войти</button>
+                    <button class="primary" id="logoutBtn" style="display:none; background: #e74c3c;">Выйти</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="commands" id="tabCommands">Команды</div>
+                <div class="tab" data-tab="ip" id="tabIp">IP</div>
+                <div class="tab" data-tab="ports" id="tabPorts">Порты</div>
+            </div>
+
+            <!-- Controls for Commands tab -->
+            <div class="top" style="margin-top:12px;" id="commandsControls">
+                <div class="controls">
+                    <select id="model"></select>
+                    <button class="primary" id="copyAllCmds">Копировать все команды</button>
+                    <button class="primary" id="addCmdBtn">Добавить команду</button>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <span class="badge">Модель: <b id="modelName"></b></span>
+            </div>
+        </div>
+
+        <!-- Controls for IP tab -->
+        <div class="top" style="margin-top:12px; display:none;" id="ipControls">
+            <div class="controls">
+                <button class="primary" id="copyAllIp">Копировать всю таблицу</button>
+            </div>
+        </div>
+
+        <!-- Controls for Ports tab -->
+        <div class="top" style="margin-top:12px; display:none;" id="portsControls">
+            <div class="controls">
+                <button class="primary" id="copyAllPorts">Копировать всю таблицу</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap">
+
+            <!-- COMMANDS SECTION -->
+            <section class="section active" id="sectionCommands">
+                <div class="grid" id="cards"></div>
+            </section>
+
+            <!-- IP SECTION -->
+            <section class="section" id="sectionIp">
+                <section class="card" id="ipCard">
+                    <div class="card-header">
+                        <div class="title">
+                            <div class="num">IP</div>
+                            <div>
+                                <h2 id="ipTitle">IP серверов и операторов</h2>
+                                <p class="desc" id="ipDesc">Выбери строку и скопируй нужный IP (или всю строку).</p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <span class="badge" id="ipBadge">Azercell / Azerfon / Roaming</span>
+                        </div>
+                    </div>
+
+                    <div class="content">
+                        <div style="overflow:auto;">
+                            <table id="ipTable" style="width:100%; border-collapse:separate; border-spacing:0 10px;">
+                            </table>
+                        </div>
+                        <div class="meta">
+                            <span class="pill" id="ipHint">Подсказка: можно копировать отдельно
+                                Azercell/Azerfon/Roaming.</span>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- PORTS SECTION -->
+            <section class="section" id="sectionPorts">
+                <section class="card" id="portsCard">
+                    <div class="card-header">
+                        <div class="title">
+                            <div class="num">PT</div>
+                            <div>
+                                <h2 id="portsTitle">Порты</h2>
+                                <p class="desc" id="portsDesc">Копируй порт по серверу/модели или всю строку.</p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <span class="badge" id="portsBadge">local/hosting • pro • geo • baku • wm • izle</span>
+                        </div>
+                    </div>
+
+                    <div class="content">
+                        <div style="overflow:auto;">
+                            <table id="portsTable" style="width:100%; border-collapse:separate; border-spacing:0 10px;">
+                            </table>
+                        </div>
+                        <div class="meta">
+                            <span class="pill" id="portsHint">Подсказка: можно копировать отдельно local/hosting, pro,
+                                geo, baku, wm,
+                                izle.</span>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="cmdModalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Добавить команду</h2>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cmdId">
+                <div class="form-group">
+                    <label for="cmdModel">Модель (или выберите "Add New..." для создания)</label>
+                    <input list="modelsList" id="cmdModel" placeholder="Выберите или введите новую модель...">
+                    <datalist id="modelsList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="cmdKey">Ключ (уникальный ID)</label>
+                    <input type="text" id="cmdKey" placeholder="e.g. my_command">
+                </div>
+                <div class="form-group">
+                    <label for="cmdTitleRu">Название (RU)</label>
+                    <input type="text" id="cmdTitleRu" placeholder="Название команды">
+                </div>
+                <div class="form-group">
+                    <label for="cmdDescRu">Описание (RU)</label>
+                    <textarea id="cmdDescRu" placeholder="Описание команды"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="cmdTitleAz">Название (AZ)</label>
+                    <input type="text" id="cmdTitleAz" placeholder="Komanda adı">
+                </div>
+                <div class="form-group">
+                    <label for="cmdDescAz">Описание (AZ)</label>
+                    <textarea id="cmdDescAz" placeholder="Komanda təsviri"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="cmdValue">Команда (CMD)</label>
+                    <textarea id="cmdValue" placeholder="AT+..." style="font-family: monospace;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="cmdTags">Теги (через запятую)</label>
+                    <input type="text" id="cmdTags" placeholder="tag1, tag2">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelModal">Отмена</button>
+                <button class="primary" id="saveCmdBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModalOverlay">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Вход</h2>
+                <button class="close-modal" id="closeLoginModal" style="display:none">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="loginUser">Имя пользователя</label>
+                    <input type="text" id="loginUser" placeholder="admin">
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Пароль</label>
+                    <input type="password" id="loginPass" placeholder="******">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary" id="doLoginBtn" style="width:100%">Войти</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <?php
+    // Dynamically load models
+    $jsFiles = glob("js/models/*.js");
+    // Ensure titles.js loads first
+    if (in_array("js/models/titles.js", $jsFiles)) {
+        echo '  <script src="js/models/titles.js"></script>' . "\n";
+        $jsFiles = array_diff($jsFiles, ["js/models/titles.js"]);
+    }
+    foreach ($jsFiles as $file) {
+        echo '  <script src="' . $file . '"></script>' . "\n";
+    }
+    ?>
+    <script src="js/locales.js"></script>
+    <script src="js/custom.js"></script>
+</body>
+
+</html>
